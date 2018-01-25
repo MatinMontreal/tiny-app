@@ -1,13 +1,18 @@
 <div>
     <h1>Project Title</h1>
 </div>
-
-  <p>
-    <form style ="display: inline-block" action="/login" method="POST" style="margin:150px;">
+  <% if (inputName.UserID == null) { %>
+    <p>
+      <form style ="display: inline-block" action="/login" method="POST" style="margin:150px;">
       <input id="username" type="text" name="username" placeholder="Username" style="width: 300px">
       <input type="submit" value="Submit Username">
-    </form>
-  </p>
-  <p>
-  </p>
-
+      </form>
+    </p>
+  <% } else { %>
+    <p>
+    Logged in as: <%= inputName.UserID %>
+      <form style ="display: inline-block" action="/login" method="POST" style="margin:150px;">
+      <input type="submit" value="Logout">
+      </form>
+    </p>
+<% } %>

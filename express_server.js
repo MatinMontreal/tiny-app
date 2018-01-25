@@ -43,7 +43,9 @@ app.get("/hello", (req, res) => {
 
 
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = { longURL:longURL, shortURL: req.params.id, inputName: loggedIn
+  };
+  res.render("urls_new", templateVars);
 });
 
 app.post("/urls", (req, res) => {
@@ -51,14 +53,14 @@ app.post("/urls", (req, res) => {
   console.log('Post URL');
   var shortURL = generateRandomString();
   urlDatabase[shortURL] = req.body.longURL;
-  console.log(urlDatabase);
   res.redirect('/urls/' + shortURL );
   //Add the short and the long URl to the database
 });
 
 app.get("/urls/:id", (req, res) => {
   let longURL = urlDatabase[req.params.id];
-  let templateVars = { longURL:longURL, shortURL: req.params.id};
+  let templateVars = { longURL:longURL, shortURL: req.params.id, inputName: loggedIn
+  };
   res.render("urls_show", templateVars);
 });
 
@@ -80,11 +82,38 @@ app.post("/urls/:id", (req, res) => {
 
 app.get("/urls", (req, res) => {
   console.log ("Get URLs");
-  let templateVars = { urls: urlDatabase };
+  let templateVars = { urls: urlDatabase,
+    inputName: loggedIn
+    };
+  console.log(templateVars)
   res.render("urls_index", templateVars);
 });
 
 
+var loggedIn= {};
+
+app.post("/login", (req, res) => {
+  res.cookie('username', req.body.username);
+  let logInName = req.body.username;
+  loggedIn['UserID'] = logInName;
+  console.log(loggedIn);
+  res.redirect("/urls");
+
+});
+
+
+
+
+
+// In order to handle the form submission, add an endpoint to handle a POST to /login in your Express server.
+
+// Use the endpoint to set the cookie parameter called username to the value submitted
+// in the request body via the form.
+
+// As a reminder, in order to set a cookie, we can use res.cookie, as provided by Express.
+// You don't need to provide the (optional) options for now.
+
+// After your server has set the cookie it should redirect the browser back to the /urls page.
 
 
 
