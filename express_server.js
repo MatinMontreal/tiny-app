@@ -93,12 +93,15 @@ app.get("/urls", (req, res) => {
 var loggedIn= {};
 
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
+  if(req.body.username !== null){
+  (res.cookie('username', req.body.username);
   let logInName = req.body.username;
   loggedIn['UserID'] = logInName;
   console.log(loggedIn);
   res.redirect("/urls");
-
+  } else {
+    res.clearCookie('name')
+  }
 });
 
 
