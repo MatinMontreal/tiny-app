@@ -1,0 +1,24 @@
+<!-- The email field should use type=email and have name=email. The password field should use type=password and have name=password. -->
+
+
+<html lang="en">
+  <head></head>
+  <body>
+    <header>
+      <% include partials/_header %>
+    </header>
+    <div>
+      Register with our site
+      <br>
+      <br>
+      <form  style ="display: inline-block" action="/register" method="POST" style="margin:150px;">
+        <label for="email">Email:</label>
+          <input id="email" type="email" name="email" style="width: 150px">
+        <label for="password">Password: </label>
+          <input id="password" type="password" name="password" style="width: 150px">
+        <input type="submit" value="Register">
+      </form>
+    </div>
+  </body>
+</html>
+

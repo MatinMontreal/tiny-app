@@ -1,11 +1,12 @@
 var express = require("express");
 var app = express();
 var PORT = process.env.PORT || 8080; // default port 8080
+var cookieParser = require('cookie-parser');
 
 const bodyParser = require('body-parser');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 app.set("view engine", "ejs")
 
 app.listen(PORT, () => {
@@ -18,6 +19,20 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+const users = {
+  "MatYoung": {
+    id: "MatYoung",
+    email: "MatYoung@aol.com",
+    password: "a"
+  },
+ "MatWashDC": {
+    id: "MatWashDC",
+    email: "MatWashDC@aol.com",
+    password: "dishwasher-funk"
+  }
+}
+
+
 function generateRandomString() {
 
     var text = "";
@@ -27,6 +42,8 @@ function generateRandomString() {
     }
     return text;
 }
+
+
 
 app.get("/", (req, res) => {
   res.end("Hello!");
@@ -40,10 +57,37 @@ app.get("/hello", (req, res) => {
   res.end("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+app.get("/register", (req, res) => {
+  let templateVars = { inputName: loggedIn,
+  };
+  res.render("urls_registration", templateVars);
+});
+
+app.post("/register", (req, res) => {
+
+
+    if ((req.body.email === '') || (req.body.password === '')) {
+      res.end("Status Code: 400.  One of your fields was empty");
+    } else if (emailExists(req.body.email)) {
+      res.end("Status Code: 400. Your email is already registered.");
+    } else {
+        let shortURL = generateRandomString();
+        users[shortURL] = { id: shortURL,
+                          email: req.body.email,
+                          password: req.body.password
+                          }
+        console.log(users);
+        res.cookie('user_id', shortURL);
+        res.redirect('/urls');
+    }
+
+});
+
+
 
 
 app.get("/urls/new", (req, res) => {
-  let templateVars = { longURL:longURL, shortURL: req.params.id, inputName: loggedIn
+  let templateVars = { user: users[req.cookies['user_id']]
   };
   res.render("urls_new", templateVars);
 });
@@ -59,7 +103,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/:id", (req, res) => {
   let longURL = urlDatabase[req.params.id];
-  let templateVars = { longURL:longURL, shortURL: req.params.id, inputName: loggedIn
+  let templateVars = { longURL:longURL, shortURL: req.params.id, user: users[req.cookies['user_id']]
   };
   res.render("urls_show", templateVars);
 });
@@ -81,42 +125,57 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  console.log ("Get URLs");
+  console.log (req.cookies);
   let templateVars = { urls: urlDatabase,
-    inputName: loggedIn
+    user: users[req.cookies['user_id']]
     };
   console.log(templateVars)
   res.render("urls_index", templateVars);
 });
 
+function emailExists(emailAddress) {
+for (let userid in users) {
+  if (users[userid].email === emailAddress) {
+  return true;}
+}
+  return false;
+}
 
-var loggedIn= {};
+
+var loggedIn = {};
 
 app.post("/login", (req, res) => {
-  if(req.body.username !== null){
-  (res.cookie('username', req.body.username);
-  let logInName = req.body.username;
-  loggedIn['UserID'] = logInName;
-  console.log(loggedIn);
-  res.redirect("/urls");
-  } else {
-    res.clearCookie('name')
+  let attempLogIn = undefined;
+  for (let userid in users) {
+  if (users[userid].email === req.body.email) {
+  attemptLogIn = users[userid]
   }
+}
+console.log(attemptLogIn.password, req.body.password);
+if(!attemptLogIn) {
+  console.log('no email')
+  res.status(403).send("Incorrect Login")
+}
+else if (attemptLogIn.password === req.body.password) {
+  console.log('logged in')
+  res.cookie('username', req.body.username);
+  // let logInName = req.body.username;
+  // loggedIn['UserID'] = logInName;
+  // console.log(loggedIn);
+  res.redirect("/urls");
+  }
+else {
+  console.log('bad pw')
+  res.status(403).send("Incorrect Login")
+}
 });
 
+app.get("/login", (req, res) => {
+  let templateVars = { user: users[req.cookies['user_id']]
+  };
+  res.render("urls_login", templateVars);
+});
 
-
-
-
-// In order to handle the form submission, add an endpoint to handle a POST to /login in your Express server.
-
-// Use the endpoint to set the cookie parameter called username to the value submitted
-// in the request body via the form.
-
-// As a reminder, in order to set a cookie, we can use res.cookie, as provided by Express.
-// You don't need to provide the (optional) options for now.
-
-// After your server has set the cookie it should redirect the browser back to the /urls page.
 
 
 
@@ -124,11 +183,4 @@ app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
-
-
-
-
-
-
-
 
